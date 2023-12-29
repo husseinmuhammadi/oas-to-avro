@@ -1,0 +1,14 @@
+{
+  "name": "tools.openapis.org",
+  "version": "1.0.0",
+  "description": "[Converters](https://tools.openapis.org/categories/converters.html)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0"
+  }
+}
