@@ -4,11 +4,14 @@
   "description": "[Converters](https://tools.openapis.org/categories/converters.html)",
   "main": "index.js",
   "scripts": {
+    "normalize": "node src/normalize.js",
+    "convert-to-json-schema": "node src/oas-to-json-schema.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0"
+    "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
+    "oas-normalize": "^11.0.1"
   }
 }

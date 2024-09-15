@@ -1,0 +1,547 @@
+openapi: 3.0.2
+info:
+    title: Taxonomy Service API
+    version: 1.2.4
+    description: >-
+        TXMS Request handler API - Returns the sales/finance/online taxonomy (read as not-hierarchy) at a
+        particular level
+servers:
+    - url: 'https://txms.aks-mdm-dev.retail.ah.eu-int-aholddelhaize.com/ah/merchandising/taxonomies/v1'
+      description: Development environment
+    - url: 'https://api-gateway-tst.integration.shd.eu-int-aholddelhaize.com/ah/merchandising/taxonomies/v1'
+      description: Test environment
+    - url: 'https://api-gateway-acc.integration.shd.eu-int-aholddelhaize.com/ah/merchandising/taxonomies/v1'
+      description: Acceptance environment
+    - url: 'https://api-gateway.integration.shd.eu-int-aholddelhaize.com/ah/merchandising/taxonomies/v1'
+      description: Production environment
+paths:
+    '/taxonomies/families/{family}':
+        summary: Retrieve taxonomy information for a given family
+        description: 'Fetches taxonomies, their parents and direct children'
+        get:
+            tags:
+                - TXMS Request Handler Endpoints
+            parameters:
+                - example: 2
+                  name: page
+                  description: number of requested page
+                  schema:
+                      default: 1
+                      minimum: 1
+                      type: integer
+                  in: query
+                  required: false
+                - example: 200
+                  name: limit
+                  description: size of the required page
+                  schema:
+                      default: 100
+                      maximum: 500
+                      minimum: 1
+                      type: integer
+                  in: query
+                  required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Taxonomy'
+                    description: Response for successful operation
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+            security:
+                - apiKey: [ ]
+            operationId: getAllForFamily
+            summary: Retrieve taxonomy information for a given family
+            description: Taxonomies of particular family.
+        parameters:
+            - examples:
+                  TaxonomyFamilyFinance:
+                      value: finance
+              name: family
+              description: Taxonomy family. Only finance is currently supported
+              schema:
+                  enum:
+                      - finance
+                  type: string
+              in: path
+              required: true
+    '/taxonomies/families/{family}/{type}':
+        summary: Retrieve taxonomy information for a given family and type
+        description: 'Fetches taxonomies, their parents and direct children'
+        get:
+            tags:
+                - TXMS Request Handler Endpoints
+            parameters:
+                - name: legacyId
+                  description: >-
+                      The legacy id defined in the source system of data. Source would be different based on
+                      family and type.
+                      
+                      Finance:
+                          - UNIT: NASA
+                          - CATEGORY: NASA
+                          - MAIN_CATEGORY: PeopleSoft
+                          - SUB_CATEGORY: PeopleSoft
+                  schema:
+                      type: integer
+                  in: query
+                  required: false
+                - example: 2
+                  name: page
+                  description: number of requested page
+                  schema:
+                      default: 1
+                      minimum: 1
+                      type: integer
+                  in: query
+                  required: false
+                - example: 200
+                  name: limit
+                  description: size of the required page
+                  schema:
+                      default: 100
+                      maximum: 500
+                      minimum: 1
+                      type: integer
+                  in: query
+                  required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Taxonomy'
+                    description: Response for successful operation
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+            security:
+                - apiKey: [ ]
+            operationId: getAllForFamilyAndType
+            summary: Retrieve taxonomy information for a given family and type
+            description: >-
+                Taxonomies of particular family and type. Optionally filtered using legacyId to support old
+                flows based on that.
+        parameters:
+            - examples:
+                  taxonomyTypeUnit:
+                      value: units
+                  TaxonomyTypeCategory:
+                      value: categories
+                  TaxonomyTypeMainCategory:
+                      value: main-categories
+                  TaxonomyTypeMiac:
+                      value: sub-categories
+              name: type
+              description: Taxonomy type
+              schema:
+                  enum:
+                      - units
+                      - categories
+                      - main-categories
+                      - sub-categories
+                  type: string
+              in: path
+              required: true
+            - examples:
+                  TaxonomyFamilyFinance:
+                      value: finance
+              name: family
+              description: Taxonomy family. Only finance is currently supported
+              schema:
+                  enum:
+                      - finance
+                  type: string
+              in: path
+              required: true
+    '/taxonomies/{id}':
+        summary: Retrieve taxonomy by its id
+        get:
+            tags:
+                - TXMS Request Handler Endpoints
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Taxonomy'
+                    description: Response for successful operation
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+            security:
+                - apiKey: [ ]
+            operationId: findTaxonomyById
+            summary: Populate a list of taxonomies based on given parameters
+            description: >-
+                Populate a list of taxonomies based on given parameters, expected at least one parameters to
+                be exists
+        parameters:
+            - name: id
+              schema:
+                  type: integer
+                  format: int64
+              in: path
+              required: true
+components:
+    schemas:
+        Error:
+            description: >-
+                See
+                https://confluence-aholddelhaize.atlassian.net/wiki/spaces/MEMDF/pages/148526009568/Error+Response+JSON+for+API+MS
+            required:
+                - dateTime
+                - status
+                - title
+            type: object
+            properties:
+                status:
+                    description: Http status code
+                    type: string
+                    example: 400
+                title:
+                    description: Title of the error
+                    type: string
+                    example: Bad Request
+                detail:
+                    description: 'Details about the error. '
+                    type: string
+                    example: Wrong query parameters provided
+                dateTime:
+                    format: date-time
+                    description: Tiemstamp of error occurence. Should follow rfc3339 and include timezone info
+                    type: string
+                    example: '2021-10-01T15:30:45.122+02:00'
+            example:
+                status: 400
+                title: Bad Request
+                dateTime: '2021-10-01T15:30:45.122+02:00'
+        Taxonomy:
+            title: Taxonomy
+            description: Taxonomy business resource
+            type: object                                                         
+            required:
+                - id
+                - name
+                - attributes
+                - expirationDate     
+                # - children
+                # - parents        
+            properties:
+                id:
+                    format: int64
+                    description: Unique identifier of the taxonomy. Generated as a sequence in TXMS
+                    type: integer
+                type:
+                    description: |-
+                        Type of Taxonomy. Allow values depend on family:
+                        Finance:
+                            - UNIT
+                            - CATEGORY
+                            - MAIN_CATEGORY
+                            - MIAC
+                    type: string
+                # children:
+                #     description: Direct child taxonomies. Further relations are not resolved.
+                #     type: array
+                #     items:
+                #         $ref: '#/components/schemas/Taxonomy'
+                # parents:
+                #     description: Direct parent taxonomies. Further relations are not resolved.
+                #     type: array
+                #     items:
+                #         $ref: '#/components/schemas/Taxonomy'        
+                name:
+                    description: Name of the taxonomy
+                    type: string
+                expirationDate:
+                    nullable: true
+                    description: Expiration date of taxonomy. Null value means that it never expires.
+                    type: string
+                    format: date
+                attributes:
+                    description: |-
+                        Additional attributes / information relevant to the taxonomy.
+                        At any time only one of the value type should be present, depending on its type
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Attribute'
+                externalIdentifiers:
+                    description: External Identifier used to map API taxonomy response to legacy and vice versa
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            id:
+                                format: int32
+                                type: integer
+                            source:
+                                type: string
+                            sourceId:
+                                type: string                      
+            example:
+                id: 8012
+                type: CATEGORY
+                name: AGF Gemak & Conserven
+                attributes:
+                    - key: managerEmailAddress
+                      strValue: Steffie.vlemmix@ahold.com
+                    - key: assistantId
+                      intValue: 2
+                    - key: assistantName
+                      strValue: Lara Fiddelaar
+                    - key: assistantEmailAddress
+                      strValue: lara.fiddelaar@ahold.com
+                    - key: managerUserId
+                      intValue: 123455
+                externalIdentifiers:
+                    - id: 80
+                      source: NASA
+                      sourceId: AP000000025
+                children:
+                    - id: 81
+                      type: MAIN_CATEGORY
+                      name: Gemak
+                      attributes:
+                          - key: managerEmailAddress
+                            strValue: Steffie.vlemmix@ahold.com
+                      externalIdentifiers:
+                          - id: 81
+                            source: NASA
+                            sourceId: AP000000025
+                parents:
+                    - id: 1
+                      type: UNIT
+                      name: ITEMS
+                      externalIdentifiers:
+                          - id: 1
+                            source: NASA
+                            sourceId: AP000000025
+        RelatedTaxonomy:
+            title: RelatedTaxonomy
+            description: Taxonomy business resource
+            required:
+                - id
+                - name
+                - attributes
+                - expirationDate
+            type: object
+            properties:
+                id:
+                    format: int64
+                    description: Unique identifier of the taxonomy. Generated as a sequence in TXMS
+                    type: integer
+                type:
+                    description: |-
+                        Type of Taxonomy. Allow values depend on family:
+                        Finance:
+                            - UNIT
+                            - CATEGORY
+                            - MAIN_CATEGORY
+                            - MIAC
+                    type: string
+                name:
+                    description: Name of the taxonomy
+                    type: string
+                expirationDate:
+                    nullable: true
+                    description: Expiration date of taxonomy. Null value means that it never expires.
+                    type: string
+                    format: date
+                attributes:
+                    description: |-
+                        Additional attributes / information relevant to the taxonomy.
+                        At any time only one of the value type should be present, depending on its type
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Attribute'
+                externalIdentifiers:
+                    description: External Identifier used to map API taxonomy response to legacy and vice versa
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            id:
+                                format: int32
+                                type: integer
+                            source:
+                                type: string
+                            sourceId:
+                                type: string
+            example:
+                id: 80765
+                type: CATEGORY
+                name: AGF Gemak & Conserven
+                attributes:
+                    - key: managerEmailAddress
+                      strValue: Steffie.vlemmix@ahold.com
+                    - key: assistantId
+                      intValue: 2
+                    - key: assistantName
+                      strValue: Lara Fiddelaar
+                    - key: assistantEmailAddress
+                      strValue: lara.fiddelaar@ahold.com
+                    - key: managerUserId
+                      intValue: 123455
+                externalIdentifiers:
+                    - id: 80
+                      source: NASA
+                      sourceId: AP000000025
+        Attribute:
+            title: Attribute
+            description: >-
+                Additional attribute / information relevant to the taxonomy. Exactly on of value properties is
+                required. The rest are null and not present in the response. To parse an attribute, system
+                should detect which value is present or know the expected type ahead of time.
+            required:
+                - key
+            type: object
+            properties:
+                key:
+                    description: Name of the attribute
+                    type: string
+                intValue:
+                    description: int Value of the attribute
+                    type: integer
+                realValue:
+                    format: double
+                    description: double Value of the attribute
+                    type: number
+                boolValue:
+                    description: bool Value of the attribute
+                    type: boolean
+                dateValue:
+                    format: date
+                    description: date Value of the attribute
+                    type: string
+                dateTimeValue:
+                    format: date-time
+                    description: date-time Value of the attribute
+                    type: string
+                strValue:
+                    description: string Value of the attribute
+                    type: string
+            example:
+                key: assistantAliasId
+                realValue: 123.123
+    responses:
+        NotFound:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+                    examples:
+                        NotFoundError:
+                            value:
+                                status: '404'
+                                title: Not Found
+                                dateTime: '2024-02-10T09:30:00+02:00'
+            description: Response when Taxonomy with given id is not found
+        InternalServerError:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+                    examples:
+                        NotFoundError:
+                            value:
+                                status: '500'
+                                title: Internal Server Error
+                                dateTime: '2024-02-10T09:30:00+02:00'
+            description: Something went wrong when processing the request.
+        BadRequest:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+                    examples:
+                        NotFoundError:
+                            value:
+                                status: '400'
+                                title: Bad Request
+                                dateTime: '2024-02-10T09:30:00+02:00'
+            description: Wrong input
+        Unauthorized:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+                    examples:
+                        UnauthorizedError:
+                            value:
+                                status: '401'
+                                title: Unauthorized
+                                dateTime: '2024-02-10T09:30:00+02:00'
+            description: 'When no or wrong API key is provided '
+    parameters:
+        pageParam:
+            name: page
+            description: The page to be returned
+            schema:
+                format: int32
+                default: 1
+                minimum: 1
+                type: integer
+            in: query
+            required: false
+        sizeParam:
+            name: size
+            description: The number of items to be returned
+            schema:
+                format: int32
+                default: 20
+                maximum: 100
+                minimum: 1
+                type: integer
+            in: query
+            required: false
+        xTransactionIdParam:
+            example: edf8dc85-28d0-4ca4-8bec-928d00b41cf4
+            name: x-transaction-id
+            description: Unique identifier for singular request
+            schema:
+                format: uuid
+                type: string
+            in: header
+            required: false
+        correlationIdParam:
+            example: de7656c7-0f5a-45ac-a784-a65d6ad0df95
+            name: correlation-id
+            description: Identifier for whole operation chain
+            schema:
+                format: uuid
+                type: string
+            in: header
+            required: false
+    securitySchemes:
+        apiKey:
+            type: apiKey
+            name: API-Key
+            in: header
+security:
+    - apiKey: [ ]
+tags:
+    - name: TXMS Request Handler Endpoints
+      description: TXMS Request Handler Endpoints
